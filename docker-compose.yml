@@ -21,7 +21,7 @@ services:                               # a list of all containers you intend to
     
     etl_job:                          # 4) run etl_job - container
         build: etl_job/               # look for a Dockerfile here -> creates an image
-        volumes:
+        volumes:                      # platform:--platform linux/amd64 shoud be added if problem with psycopg2 for Mac
         - ./etl_job/:/etl/            # creating local dir "etl_job" into the "/app"-dir in this container
         depends_on:
         - mongodb                     # we need to have a DB first, from which we extract tweets
