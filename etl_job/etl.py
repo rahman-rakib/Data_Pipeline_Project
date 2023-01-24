@@ -58,12 +58,12 @@ def extract(db, number_of_tweets=5):
 
 
 # useful regular expressions
-regex_list = list(
+regex_list = [
     '@[A-Za-z0-9]+',  # to find @mentions
     '#',              # to find hashtag symbol
     'RT\s',           # to find retweet announcement
     'https?:\/\/\S+'  # to find most URLs
-    )
+    ]
 
 
 def clean_tweet(tweet):
@@ -137,7 +137,7 @@ def load(pg_engine, transformed_data):
         );""")
 
     # sql query for inserting text and score data
-    query = "INSERT INTO tweets VALUES (%s, %d);"
+    query = "INSERT INTO tweets VALUES (%s, %s);"
     
     # insert new recods in table
     for data in transformed_data:
@@ -150,8 +150,8 @@ def load(pg_engine, transformed_data):
 ##########################################################################
 
 # mongodb connection; give mongodb some seconds to start
-time.sleep(10)
 mongo_db = mongodb_connection()
+time.sleep(10)
 
 # extract tweets from mongodb
 extracted_tweets = extract(mongo_db)

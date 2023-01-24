@@ -1,42 +1,71 @@
 version: '3'
 
-# docker-compose build (1x only if you edit the Dockerfile or files used by it)
-# docker-compose up    (everytime you wanna start the pipeline)
-# docker-compose down  (everytime you wanna stop the pipeline and remove (!) containers; otherwise: Ctrl + C)
+# list of all containers you intended to be used
+services:
+    
+    ################################################################################
+    # run tweet_collector container
+    ################################################################################
 
-services:                               # a list of all containers you intend to use
-    tweet_collector:                    # 2) run tweet_collector - container
-        build: tweet_collector/         # look for a Dockerfile here -> creates an image
+    tweet_collector:                       
+        build: tweet_collector/
+        # image gets created from Dockerfile   
         volumes: 
-        - ./tweet_collector/:/tweet_collector/      # creating local dir "tweet_collector" into the "/app"-dir in this container
-        depends_on:                     # we need to have a DB first, into which tweets are written
+        # creating local dir into the "/tweet_collector"-dir in this container
+        - ./tweet_collector/:/tweet_collector/
+        depends_on:
+        # DB into which tweets are dumped                
         - mongodb
         env_file:
         - .env
-        
-    mongodb:                            # 1) fire up MongoDB - container
-        image: mongo                    # image downloaded from Docker Hub
-        ports:
-        - 27017:27017                   # maps port 2017 of this container (RS) to port 2017 of localhost (LS)
+
+    ################################################################################   
+     # fire up MongoDB container
+     ###############################################################################
     
-    etl_job:                          # 4) run etl_job - container
-        build: etl_job/               # look for a Dockerfile here -> creates an image
-        volumes:                      # platform:--platform linux/amd64 shoud be added if problem with psycopg2 for Mac
-        - ./etl_job/:/etl/            # creating local dir "etl_job" into the "/app"-dir in this container
+    mongodb:                           
+        image: mongo
+        # image downloaded from Docker Hub                   
+        ports:
+        # maps port 27017 of this container (RS) to port 27017 of localhost (LS)
+        - 27017:27017             
+    
+    ################################################################################
+    # run etl_job container 
+    ################################################################################
+    
+    etl_job:                         
+        build: etl_job/
+        # image gets created from Dockerfile
+        # platform:--platform linux/amd64 should be added if problem for Mac
+        volumes:
+         # creating local dir into the "/etl"-dir in this container
+        - ./etl_job/:/etl/      
         depends_on:
-        - mongodb                     # we need to have a DB first, from which we extract tweets
-        - postgresdb                  # we need to have a DB first, into which we load transformed tweets
+        - mongodb           # DB from which we extract tweets                     
+        - postgresdb        # DB into which we load transformed tweets
     
-    postgresdb:                       # 3) fire up postgresDB - container; # name : also the hostname
-        image: postgres               # image downloaded from Docker Hub
+    ################################################################################
+    # fire up postgresDB container 
+    ################################################################################
+
+    postgresdb:                    
+        image: postgres
+        # image downloaded from Docker Hub               
         ports:
-        - 5555:5432                 # maps port 5432 of this container (RS) to port 5555 of localhost (LS)
-        environment:                  # sets environment variables
+        # maps port 5432 of this container (RS) to port 5555 of localhost (LS)
+        - 5555:5432         
+        environment:
+        # sets environment variables                 
         - POSTGRES_USER=postgres
         - POSTGRES_PASSWORD=1234
         - POSTGRES_DB=tweets
     
-    slackbot:                         # finally, and the cherry on top: slackbot - container
+    ################################################################################
+    # finally, the cherry on top: slackbot container
+    ################################################################################
+    
+    slackbot:                       
         build: slackbot/
         volumes:
         - ./slackbot/:/post_tweet/
@@ -44,3 +73,7 @@ services:                               # a list of all containers you intend to
         - postgresdb
         env_file:
         - .env
+
+    ################################################################################
+    #
+    ################################################################################
